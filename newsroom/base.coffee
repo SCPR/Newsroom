@@ -3,8 +3,9 @@ path    = require 'path'
 express = require 'express'
 io      = require 'socket.io'
 
-User       = require('./user')
-Room       = require('./room')
+User   = require('./user')
+Room   = require('./room')
+Record = require('./record')
 
 class Base
     DefaultOptions:
@@ -18,7 +19,7 @@ class Base
         @app.use @app.router
         @server = @app.listen @options.port
         io      = io.listen @server
-        require('./routes')(@app, User.connected)
+        require('./routes')(@app, User.all())
 
                 
         # socket.io
@@ -26,38 +27,47 @@ class Base
         io.sockets.on 'connection', (socket) =>
             console.log "***got connection for", socket.id
 
-            socket.on 'entered', (room_json, user_json, object_json="null") =>
-                console.log "*** got enter for #{socket.id}"
+            socket.on 'entered', (room_json, user_json, record_json="null") ->
                 # Parse the information we were given
-                roomInfo = JSON.parse(room_json)
-                userInfo = JSON.parse(user_json)
-                object   = JSON.parse(object_json)
-                                
-                # Create the user, and
-                # Get the requested room (or create it if it doesn't exist)
-                room = Room.all()[roomInfo.id] || Room.create(roomInfo)
-                user = User.create socket, room.id, userInfo
+                roomInfo   = JSON.parse(room_json)
+                userInfo   = JSON.parse(user_json)
+                recordInfo = JSON.parse(record_json)
+
+                # Get the requested room (or create it if it doesn't exist),                                
+                # Create a record if it was passed in
+                # Create the user
+                record = Record.create(recordInfo) if recordInfo?
+                room   = Room.find(roomInfo.id) || Room.create(roomInfo, record: record)
+                user   = User.create socket, room.id, userInfo
 
                 # Connect the user and socket to the room
                 user.join room
                 socket.join room.id
                 
                 # Now hand the events off to the Room object
-                room.entered(socket, user, object)
+                room.entered(socket, user, record)
 
-            socket.on 'focus', (field_id) =>
-                io.sockets.emit 'highlight_field', field_id, @users.connected[socket.id].color
 
-            socket.on 'blur', (field_id) =>
-                io.sockets.emit 'unhighlight_field', field_id
+            socket.on 'fieldFocus', (fieldId) ->
+                if user = User.find socket.id
+                    room = Room.find user.roomId
+                    room.fieldFocus socket, fieldId, user
 
-            socket.on 'disconnect', =>
+
+            socket.on 'fieldBlur', (fieldId) ->
+                if user = User.find socket.id
+                    room = Room.find user.roomId
+                    room.fieldBlur socket, fieldId, user
+                
+
+            socket.on 'disconnect', ->
                 console.log "***got disconnect for", socket.id
                 
                 # If a user exists with this socket.id,
                 # send the signal to remove this user
-                if user = User.connected[socket.id]
-                    io.sockets.emit('remove-user', user)
+                if user = User.find(socket.id)
+                    room = Room.find user.roomId
+                    io.sockets.emit('removeUser', user)
                     user.destroy()
                 
                 socket.leave socket.room

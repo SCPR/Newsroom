@@ -8,15 +8,21 @@
 # instantiated directly.
 #
 _u = require 'underscore'
+Colors = require('./colors')
 
-module.exports = class Room
+class Room
     @_collection = {}
-    
+
+    #----------
+    # Find a room from ID
+    @find: (id) ->
+        @all()[id]
+        
     #----------
     # Create a new Room object (subclassed)
     # and add it to Room._collection
-    @create: (attributes) ->
-        room = new Room[attributes.type](attributes)
+    @create: (attributes, options) ->
+        room = new Room[attributes.type](attributes, options)
         @_collection[room.id] = room
 
     #----------
@@ -41,14 +47,19 @@ module.exports = class Room
     # Room.Active.users()
     @users: ->
         users = []
-        _u.each @all(), (room) ->
+        for room in @all()
             users = users.concat room.users
         users
         
     #--------------------------------
+
+    # Each room has a set of colors
+    colors: new Colors
     
-    constructor: (attributes) ->
-        _u.each attributes, (value, attribute) =>
+    constructor: (attributes, options) ->
+        @record = options.record if options.record?
+        
+        for attribute, value of attributes
             @[attribute] = value
 
     connect: (user) ->
@@ -60,6 +71,12 @@ module.exports = class Room
     destroy: ->
         Room.destroy @id
 
+    fieldFocus: (socket, fieldId, user) ->
+        true
+        
+    fieldBlur: (socket, fieldId, user) ->
+        true
+        
     #--------------
     # Room.Active
     #
@@ -72,36 +89,43 @@ module.exports = class Room
         @all: ->
             super "Active"
 
-        constructor: (attributes) ->
+        constructor: (attributes, options) ->
             @users = []
             super
 
         #--------------
         # Socket.io message responses
-        entered: (socket, user, object) ->
-            socket.emit("load-list", @users)
-            socket.broadcast.to(@id).emit("new-user", user)
-            socket.broadcast.to("dashboard").emit("new-user", user, object)
+        entered: (socket, user, record) ->
+            socket.emit("loadList", @users)
+            socket.broadcast.to(@id).emit("newUser", user)
+            socket.broadcast.to("dashboard").emit("newUser", user)
+        
+        fieldFocus: (socket, fieldId, user) ->
+            socket.emit('fieldFocus', fieldId, user)
 
-
+        fieldBlur: (socket, fieldId, user) ->
+            socket.emit('fieldBlur', fieldId, user)
+            
     #--------------
     # Room.Inactive
     #
     # An "Inactive" room is a room in which
     # there will not be activity. It only listens
     # for messages coming from Active rooms.
-    # Examples: Edit pages
+    # Examples: Index pages
     #
     class @Inactive extends Room
         @all: ->
             super "Inactive"
 
-        constructor: (attributes) ->
+        constructor: (attributes, options) ->
             @users = []
             super
             
         #--------------
         # Socket.io message responses
         entered: (socket, user, object) ->
-            console.log "users are", Room.Active.users()
-            socket.emit("load-list", Room.Active.users())
+            users = Room.Active.users()
+            socket.emit("loadList", users)
+
+module.exports = Room

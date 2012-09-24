@@ -6,7 +6,7 @@
 #
 _u = require 'underscore'
 
-module.exports = class Colors
+class Colors
     constructor: ->
         # These pastels were randomly generated
         # at some point.
@@ -35,19 +35,29 @@ module.exports = class Colors
         
         @in_use = []
 
-
+    #-------------
+    # Choose an available color
     pick: ->
         color = @random()
         @_switch(@available, @in_use, color)
         color
-        
+
+    #-------------
+    # Mark a color as "available"
     markAvailable: (color) ->
         @_switch(@in_use, @available, color)
         @available
 
+    #-------------
+    # "Random" color from available colors
     random: ->
         @available[Math.floor(Math.random()*@available.length)]
-    
+
+    #-------------
+    # Switch a color from available to in_use,
+    # or reverse
     _switch: (from, to, color) ->
         color = from.splice(from.indexOf(color), 1)[0]
         to.push color
+
+module.exports = Colors
