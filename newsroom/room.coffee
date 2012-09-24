@@ -100,11 +100,11 @@ class Room
             socket.broadcast.to(@id).emit("newUser", user)
             socket.broadcast.to("dashboard").emit("newUser", user)
         
-        fieldFocus: (socket, fieldId, user) ->
-            socket.emit('fieldFocus', fieldId, user)
+        fieldFocus: (io, socket, fieldId, user) ->
+            io.sockets.emit('fieldFocus', fieldId, user)
 
-        fieldBlur: (socket, fieldId, user) ->
-            socket.emit('fieldBlur', fieldId, user)
+        fieldBlur: (io, socket, fieldId, user) ->
+            io.sockets.emit('fieldBlur', fieldId, user)
             
     #--------------
     # Room.Inactive

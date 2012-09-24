@@ -51,13 +51,13 @@ class Base
             socket.on 'fieldFocus', (fieldId) ->
                 if user = User.find socket.id
                     room = Room.find user.roomId
-                    room.fieldFocus socket, fieldId, user
+                    room.fieldFocus io, socket, fieldId, user
 
 
             socket.on 'fieldBlur', (fieldId) ->
                 if user = User.find socket.id
                     room = Room.find user.roomId
-                    room.fieldBlur socket, fieldId, user
+                    room.fieldBlur io, socket, fieldId, user
                 
 
             socket.on 'disconnect', ->
