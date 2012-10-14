@@ -12,8 +12,8 @@ class Base
         port:   8888
 
     constructor: (opts) ->
-        @options     = _u.defaults opts||{}, @DefaultOptions
-
+        @options = _u.defaults opts||{}, @DefaultOptions
+        
         # Setup express and node
         @app    = express()
         @app.use @app.router
