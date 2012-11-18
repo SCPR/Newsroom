@@ -1,5 +1,5 @@
 should = require('chai').should()
-Colors = require '../src/user'
+Colors = require '../src/colors'
 
 describe "Colors", ->
     it "is alive", ->

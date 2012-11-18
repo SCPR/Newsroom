@@ -1,5 +1,5 @@
 should = require('chai').should()
-Record = require '../src/user'
+Record = require '../src/record'
 
 describe "Record", ->
     it "is alive", ->
