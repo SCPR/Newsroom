@@ -11,8 +11,8 @@ class Base
     DefaultOptions:
         port:   8888
 
-    constructor: (opts) ->
-        @options = _u.defaults opts||{}, @DefaultOptions
+    constructor: (opts={}) ->
+        @options = _u.defaults opts, @DefaultOptions
         
         # Setup express and node
         @app    = express()
@@ -33,7 +33,7 @@ class Base
                 userInfo   = JSON.parse(user_json)
                 recordInfo = JSON.parse(record_json)
 
-                # Get the requested room (or create it if it doesn't exist),                                
+                # Get the requested room (or create it if it doesn't exist),
                 # Create a record if it was passed in
                 # Create the user
                 record = Record.create(recordInfo) if recordInfo?
@@ -46,20 +46,9 @@ class Base
                 
                 # Now hand the events off to the Room object
                 room.entered(socket, user, record)
-
-
-            socket.on 'fieldFocus', (fieldId) ->
-                if user = User.find socket.id
-                    room = Room.find user.roomId
-                    room.fieldFocus io, socket, fieldId, user
-
-
-            socket.on 'fieldBlur', (fieldId) ->
-                if user = User.find socket.id
-                    room = Room.find user.roomId
-                    room.fieldBlur io, socket, fieldId, user
-                
-
+            
+            #------------------------
+            
             socket.on 'disconnect', ->
                 console.log "***got disconnect for", socket.id
                 

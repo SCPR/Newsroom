@@ -59,7 +59,7 @@ class User
         room.connect @
 
     #-------------
-    # Leave a Rooom    
+    # Leave a Room
     leave: (room) ->
         @record = null
         room.disconnect @

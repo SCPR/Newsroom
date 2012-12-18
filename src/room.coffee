@@ -71,12 +71,6 @@ class Room
     destroy: ->
         Room.destroy @id
 
-    fieldFocus: (socket, fieldId, user) ->
-        true
-        
-    fieldBlur: (socket, fieldId, user) ->
-        true
-        
     #--------------
     # Room.Active
     #
@@ -99,13 +93,7 @@ class Room
             socket.emit("loadList", @users)
             socket.broadcast.to(@id).emit("newUser", user)
             socket.broadcast.to("dashboard").emit("newUser", user)
-        
-        fieldFocus: (io, socket, fieldId, user) ->
-            io.sockets.emit('fieldFocus', fieldId, user)
 
-        fieldBlur: (io, socket, fieldId, user) ->
-            io.sockets.emit('fieldBlur', fieldId, user)
-            
     #--------------
     # Room.Inactive
     #
