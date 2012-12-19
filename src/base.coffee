@@ -27,18 +27,20 @@ class Base
         io.sockets.on 'connection', (socket) =>
             console.log "***got connection for", socket.id
 
-            socket.on 'entered', (room_json, user_json, record_json="null") ->
+            socket.on 'entered', (roomId, userJson, options={}) ->
                 # Parse the information we were given
-                roomInfo   = JSON.parse(room_json)
-                userInfo   = JSON.parse(user_json)
-                recordInfo = JSON.parse(record_json)
+                userInfo   = JSON.parse(userJson)
+                recordInfo = JSON.parse(options.recordJson)
 
                 # Get the requested room (or create it if it doesn't exist),
                 # Create a record if it was passed in
                 # Create the user
                 record = Record.create(recordInfo) if recordInfo?
-                room   = Room.find(roomInfo.id) || Room.create(roomInfo, record: record)
-                user   = User.create socket, room.id, userInfo
+                room   = Room.find(roomId) || Room.create(roomId, record: record)
+                
+                # Find or create the user, and add this socket to its sockets
+                user   = User.find(userInfo.id) || User.create(userInfo)
+                user.addSocket socket
 
                 # Connect the user and socket to the room
                 user.join room
