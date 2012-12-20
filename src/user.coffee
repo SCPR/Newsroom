@@ -22,34 +22,26 @@ class User
     # Find a user by ID
     @find: (id) ->
         @_collection[id]
-        
+
     #-------------
-    # Create a new user
-    @create: (args...) ->
-        new User(args...)
-    
-    #-------------
-    # Destroy a User based on socketId
+    # Destroy a User based on id
+    # Removes them from all rooms and 
+    # will also destroy a room if it 
+    # is empty
     @destroy: (id) ->
         user = User.find(id)
         
         # Leave the rooms
         for room in user.rooms()
             user.leave room
-
-            # If the room is empty, destroy it
-            room.destroy() if _u.isEmpty room.users
             
         delete @_collection[id]
 
     #-------------------------
     
     constructor: (attributes, options={}) ->
-        @roomIds   = []
-        @socketIds = []
-        
-        @addSocket options.socket if options.socket?
-        @join      options.room   if options.room?
+        @roomIds = []
+        @records = []
         
         for attribute, value of attributes
             @[attribute] = value
@@ -57,24 +49,27 @@ class User
         User._collection[@id] = @
     
     #-------------
-    # Add to this user's socket collection
-    addSocket: (socket) ->
-        @socketIds.push socket.id
-        
-    #-------------
     # Join a Room
     join: (room) ->
         @roomIds.push room.id
+        @records.push room.record if room.record?
         room.connect @
 
     #-------------
     # Leave a Room
+    # If this user isn't in any rooms anymore, 
+    # get rid of the user
     leave: (room) ->
         @roomIds.splice @roomIds.indexOf(room.id), 1
+        
+        if room.record?
+            @records.splice @records.indexOf(room.record), 1
+        
+        @destroy() if _u.isEmpty @roomIds
         room.disconnect @
-
+        
     #-------------
-    # Destroy this User
+    # Destroy this User completely
     destroy: ->
         User.destroy @id
     

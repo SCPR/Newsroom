@@ -7,7 +7,8 @@
 # This is an abstract class and shouldn't be
 # instantiated directly.
 #
-_u = require 'underscore'
+_u   = require 'underscore'
+User = require './user'
 
 class Room
     @_collection = {}
@@ -21,12 +22,6 @@ class Room
     # Find a room from ID
     @find: (id) ->
         @_collection[id]
-        
-    #----------
-    # Create a new Room object
-    # and add it to @_collection
-    @create: (args...) ->
-        new Room(args...)
 
     #----------
     # Remove a room from Room._collection
@@ -43,24 +38,18 @@ class Room
     constructor: (@id, options={}) ->
         @users = []
         @record = options.record if options.record?
-                
         Room._collection[@id] = @
 
     connect: (user) ->
         @users.push user
-        
+    
+    # Disconnect a user, destroy this room
+    # if the users are empty
     disconnect: (user) ->
         @users.splice @users.indexOf(user), 1
-    
+        @destroy() if _u.isEmpty(@users)
+        
     destroy: ->
         Room.destroy @id
-
-    #--------------
-    # Socket.io message responses
-    # entered: When a user enters a room
-    entered: (socket, user, record) ->
-        socket.emit("loadList", @users)
-        socket.broadcast.to(@id).emit("newUser", user)
-        socket.broadcast.to("dashboard").emit("newUser", user)
 
 module.exports = Room
