@@ -21,46 +21,49 @@ class Base
         io      = io.listen @server
         require('./routes')(@app, User.all())
 
-                
+        
         # socket.io
         # TODO Clean this up, move it somewhere else
         io.sockets.on 'connection', (socket) =>
             console.log "***got connection for", socket.id
 
-            socket.on 'entered', (room_json, user_json, record_json="null") ->
+            socket.on 'entered', (roomId, userJson, options={}) ->
                 # Parse the information we were given
-                roomInfo   = JSON.parse(room_json)
-                userInfo   = JSON.parse(user_json)
-                recordInfo = JSON.parse(record_json)
+                userInfo = JSON.parse(userJson)
+                
+                if options.recordJson
+                    recordInfo = JSON.parse(options.recordJson)
+                    record     = Record.create(recordInfo)
 
                 # Get the requested room (or create it if it doesn't exist),
-                # Create a record if it was passed in
                 # Create the user
-                record = Record.create(recordInfo) if recordInfo?
-                room   = Room.find(roomInfo.id) || Room.create(roomInfo, record: record)
-                user   = User.create socket, room.id, userInfo
+                room   = Room.find(roomId) || new Room(roomId, record: record)
+                
+                # Find or create the user
+                user = User.find(userInfo.id) || new User(userInfo)
 
                 # Connect the user and socket to the room
+                socket.user = user
+                socket.room = room
+
                 user.join room
                 socket.join room.id
                 
-                # Now hand the events off to the Room object
-                room.entered(socket, user, record)
+                io.sockets.in(room.id).emit("loadList", room.users) unless room.id is "dashboard"
+                io.sockets.in("dashboard").emit("loadList", User.all())                
             
             #------------------------
             
             socket.on 'disconnect', ->
                 console.log "***got disconnect for", socket.id
-                
-                # If a user exists with this socket.id,
-                # send the signal to remove this user
-                if user = User.find(socket.id)
-                    room = Room.find user.roomId
-                    io.sockets.emit('removeUser', user)
-                    user.destroy()
-                
-                socket.leave socket.room
 
-    #----------
+                user = socket.user
+                room = socket.room
+                
+                user.leave room
+                socket.leave room
+                
+                io.sockets.in(room.id).emit("loadList", room.users) unless room.id is "dashboard"
+                io.sockets.in("dashboard").emit("loadList", User.all())
 
 module.exports = Base
