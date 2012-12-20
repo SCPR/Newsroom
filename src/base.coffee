@@ -19,7 +19,7 @@ class Base
         @app.use @app.router
         @server = @app.listen @options.port
         io      = io.listen @server
-        require('./routes')(@app, User.all())
+        require('./routes')(@app, io)
 
         
         # socket.io

@@ -2,14 +2,18 @@
 #
 # Route definitions for Express
 #
-module.exports = (app, users) ->
+Room = require "./room"
+
+module.exports = (app, io) ->
     app.get '/', (req, res) ->
       res.send 404
 
-    app.post '/task/finished/:user', (req, res) ->
-      target = users[req.params.user]
-      if target
-        users[req.params.to].emit("finished", req.body)
-        res.send 200
+    app.post '/task/finished/:room', (request, response) ->
+      rooms = Room.all()
+      room  = rooms[request.params.room]
+      
+      if room
+        io.sockets.in(room.id).emit("finished-task", request.body)
+        response.send 200
       else
-        res.send 404
+        response.send 404
