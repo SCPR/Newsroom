@@ -28,19 +28,14 @@ class Base
             console.log "***got connection for", socket.id
 
             socket.on 'entered', (roomId, userJson, options={}) ->
-                # Parse the information we were given
-                userInfo = JSON.parse(userJson)
-                
-                if options.recordJson
-                    recordInfo = JSON.parse(options.recordJson)
-                    record     = Record.create(recordInfo)
+                record = Record.create(options.recordJson) if options.recordJson
 
                 # Get the requested room (or create it if it doesn't exist),
                 # Create the user
-                room   = Room.find(roomId) || new Room(roomId, record: record)
+                room = Room.find(roomId) || new Room(roomId, record: record)
                 
                 # Find or create the user
-                user = User.find(userInfo.id) || new User(userInfo)
+                user = User.find(userJson.id) || new User(userJson)
 
                 # Connect the user and socket to the room
                 socket.user = user
