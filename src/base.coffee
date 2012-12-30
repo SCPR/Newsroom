@@ -17,6 +17,7 @@ class Base
         # Setup express and node
         @app    = express()
         @app.use @app.router
+        
         @server = @app.listen @options.port
         io      = io.listen @server
         require('./routes')(@app, io)
@@ -55,10 +56,12 @@ class Base
                 user = socket.user
                 room = socket.room
                 
-                user.leave room
-                socket.leave room
+                user.leave room if user
                 
-                io.sockets.in(room.id).emit("loadList", room.users) unless room.id is "dashboard"
+                if room
+                    socket.leave room
+                    io.sockets.in(room.id).emit("loadList", room.users) unless room.id is "dashboard"
+
                 io.sockets.in("dashboard").emit("loadList", User.all())
 
 module.exports = Base
