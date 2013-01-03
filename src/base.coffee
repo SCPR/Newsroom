@@ -45,8 +45,7 @@ class Base
                 user.join room
                 socket.join room.id
                 
-                io.sockets.in(room.id).emit("loadList", room.users) unless room.id is "dashboard"
-                io.sockets.in("dashboard").emit("loadList", User.all())                
+                user.emitUpdate(io)
             
             #------------------------
             
@@ -55,13 +54,12 @@ class Base
 
                 user = socket.user
                 room = socket.room
-                
-                user.leave room if user
-                
+
                 if room
                     socket.leave room
-                    io.sockets.in(room.id).emit("loadList", room.users) unless room.id is "dashboard"
-
-                io.sockets.in("dashboard").emit("loadList", User.all())
-
+                    
+                    if user
+                        user.leave room if user
+                        user.emitUpdate(io)
+                
 module.exports = Base

@@ -80,5 +80,13 @@ class User
         for roomId in @roomIds
             rooms.push room if room = Room.find roomId
         rooms
+
+    #-------------
+    
+    emitUpdate: (io) ->
+        for room in @rooms()
+            io.sockets.in(room.id).emit("loadList", room.users) unless room.id is "dashboard"
+    
+        io.sockets.in("dashboard").emit("loadList", User.all())
         
 module.exports = User
