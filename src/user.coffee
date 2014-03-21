@@ -12,12 +12,12 @@ Room = require('./room')
 
 class User
     @_collection = {}
-    
+
     #-------------
     # Return all connected users
     @all: ->
         @_collection
-        
+
     #-------------
     # Find a user by ID
     @find: (id) ->
@@ -25,29 +25,29 @@ class User
 
     #-------------
     # Destroy a User based on id
-    # Removes them from all rooms and 
-    # will also destroy a room if it 
+    # Removes them from all rooms and
+    # will also destroy a room if it
     # is empty
     @destroy: (id) ->
         user = User.find(id)
-        
+
         # Leave the rooms
         for room in user.rooms()
             user.leave room
-            
+
         delete @_collection[id]
 
     #-------------------------
-    
+
     constructor: (attributes, options={}) ->
         @roomIds = []
         @records = []
-        
+
         for attribute, value of attributes
             @[attribute] = value
-        
+
         User._collection[@id] = @
-    
+
     #-------------
     # Join a Room
     join: (room) ->
@@ -57,22 +57,22 @@ class User
 
     #-------------
     # Leave a Room
-    # If this user isn't in any rooms anymore, 
+    # If this user isn't in any rooms anymore,
     # get rid of the user
     leave: (room) ->
         @roomIds.splice @roomIds.indexOf(room.id), 1
-        
+
         if room.record?
             @records.splice @records.indexOf(room.record), 1
-        
+
         @destroy() if _u.isEmpty @roomIds
         room.disconnect @
-        
+
     #-------------
     # Destroy this User completely
     destroy: ->
         User.destroy @id
-    
+
     #-------------
     # Get the Rooms this user in
     rooms: ->
@@ -82,11 +82,12 @@ class User
         rooms
 
     #-------------
-    
+
     emitUpdate: (io) ->
         for room in @rooms()
-            io.sockets.in(room.id).emit("loadList", room.users) unless room.id is "dashboard"
-    
+            unless room.id is "dashboard"
+                io.sockets.in(room.id).emit("loadList", room.users)
+
         io.sockets.in("dashboard").emit("loadList", User.all())
-        
+
 module.exports = User

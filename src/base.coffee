@@ -13,16 +13,16 @@ class Base
 
     constructor: (opts={}) ->
         @options = _u.defaults opts, @DefaultOptions
-        
+
         # Setup express and node
         @app    = express()
         @app.use @app.router
-        
+
         @server = @app.listen @options.port
         io      = io.listen @server
         require('./routes')(@app, io)
 
-        
+
         # socket.io
         # TODO Clean this up, move it somewhere else
         io.sockets.on 'connection', (socket) =>
@@ -34,7 +34,7 @@ class Base
                 # Get the requested room (or create it if it doesn't exist),
                 # Create the user
                 room = Room.find(roomId) || new Room(roomId, record: record)
-                
+
                 # Find or create the user
                 user = User.find(userJson.id) || new User(userJson)
 
@@ -44,11 +44,11 @@ class Base
 
                 user.join room
                 socket.join room.id
-                
+
                 user.emitUpdate(io)
-            
+
             #------------------------
-            
+
             socket.on 'disconnect', ->
                 console.log "***got disconnect for", socket.id
 
@@ -57,9 +57,9 @@ class Base
 
                 if room
                     socket.leave room
-                    
+
                     if user
                         user.leave room if user
                         user.emitUpdate(io)
-                
+
 module.exports = Base

@@ -11,7 +11,7 @@ module.exports = (app, io) ->
     app.post '/task/finished/:room', (req, res) ->
         rooms = Room.all()
         room  = rooms[req.params.room]
-        
+
         if room
             io.sockets.in(room.id).emit("finished-task", req.query)
             res.send(200, { status: "Success" })

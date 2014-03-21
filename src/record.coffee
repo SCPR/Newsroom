@@ -18,24 +18,24 @@
 #
 class Record
     @_collection = {}
-    
+
     @all: ->
         @_collection
-        
+
     @find: (id) ->
         @_collection[id]
-        
+
     #---------------
     # Create a Record
     @create: (recordInfo) ->
         new Record(recordInfo)
-    
+
     #---------------
-    
+
     constructor: (attributes) ->
         for attribute, value of attributes
             @[attribute] = value
-        
+
         Record._collection[@obj_key] = @
 
 module.exports = Record

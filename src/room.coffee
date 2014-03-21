@@ -17,7 +17,7 @@ class Room
     # The collection
     @all: ->
         @_collection
-        
+
     #----------
     # Find a room from ID
     @find: (id) ->
@@ -27,14 +27,14 @@ class Room
     # Remove a room from Room._collection
     @destroy: (id) ->
         room = Room.find(id)
-        
+
         for user in room.users
             user.leave room
-        
+
         delete @_collection[id]
-        
+
     #--------------------------------
-    
+
     constructor: (@id, options={}) ->
         @users = []
         @record = options.record if options.record?
@@ -42,13 +42,13 @@ class Room
 
     connect: (user) ->
         @users.push user
-    
+
     # Disconnect a user, destroy this room
     # if the users are empty
     disconnect: (user) ->
         @users.splice @users.indexOf(user), 1
         @destroy() if _u.isEmpty(@users)
-        
+
     destroy: ->
         Room.destroy @id
 
