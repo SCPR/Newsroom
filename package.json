@@ -4,7 +4,7 @@
   "description": "Collaborative Editing",
   "keywords": ["editing", "CMS"],
   "homepage": "http://github.com/SCPR/Newsroom/",
-  "author": {"name": "Bryan Ricker", "url": "http://github.com/bricker88"},
+  "author": {"name": "Bryan Ricker", "url": "http://github.com/bricker"},
   "repository": {"type": "git", "url": "http://github.com/SCPR/Newsroom.git"},
   "main": "./src/base",
   "dependencies": {
