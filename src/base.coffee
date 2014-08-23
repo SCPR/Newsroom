@@ -8,26 +8,19 @@ Room   = require('./room')
 Record = require('./record')
 
 class Base
-    DefaultOptions:
-        port:   8888
-
-    constructor: (opts={}) ->
-        @options = _u.defaults opts, @DefaultOptions
-
+    constructor: (port)->
         # Setup express and node
-        @app    = express()
-        @app.use @app.router
+        app    = express()
+        app.use app.router
 
-        @server = @app.listen @options.port
-        io      = io.listen @server
-        require('./routes')(@app, io)
+        server = app.listen port
+        io     = io.listen server
+        require('./routes')(app, io)
 
 
         # socket.io
         # TODO Clean this up, move it somewhere else
         io.sockets.on 'connection', (socket) =>
-            console.log "***got connection for", socket.id
-
             socket.on 'entered', (roomId, userJson, options={}) ->
                 record = Record.create(options.recordJson) if options.recordJson
 
@@ -50,8 +43,6 @@ class Base
             #------------------------
 
             socket.on 'disconnect', ->
-                console.log "***got disconnect for", socket.id
-
                 user = socket.user
                 room = socket.room
 

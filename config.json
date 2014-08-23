@@ -1,6 +1,0 @@
-{
-    "newsroom": {
-        "port":         8888,
-        "log":          "/tmp/newsroom.log"
-    }
-}
