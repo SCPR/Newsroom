@@ -17,7 +17,6 @@ class Base
         io     = io.listen server
         require('./routes')(app, io)
 
-
         # socket.io
         # TODO Clean this up, move it somewhere else
         io.sockets.on 'connection', (socket) =>

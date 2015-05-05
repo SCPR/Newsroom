@@ -1,6 +1,6 @@
 {
   "name": "Newsroom",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Collaborative Editing",
   "keywords": ["editing", "CMS"],
   "homepage": "http://github.com/SCPR/Newsroom/",
@@ -8,9 +8,8 @@
   "repository": {"type": "git", "url": "http://github.com/SCPR/Newsroom.git"},
   "main": "./src/base",
   "dependencies": {
-    "coffee-script": "1.6.x",
+    "coffee-script": "~1.9",
     "express": "3.1.x",
-    "nconf": "0.5.1",
     "strtok": "0.1.1",
     "underscore": "1.4.x",
     "socket.io": "0.9.x"
